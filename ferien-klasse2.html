@@ -276,6 +276,27 @@
   const UHR_VOLL = { "🕐":"1:00","🕑":"2:00","🕒":"3:00","🕓":"4:00","🕔":"5:00","🕕":"6:00","🕖":"7:00","🕗":"8:00","🕘":"9:00","🕙":"10:00","🕚":"11:00","🕛":"12:00" };
   const UHR_HALB = { "🕜":"1:30","🕝":"2:30","🕞":"3:30","🕟":"4:30","🕠":"5:30","🕡":"6:30","🕢":"7:30","🕣":"8:30","🕤":"9:30","🕥":"10:30","🕦":"11:30","🕧":"12:30" };
 
+  /* ---------- Vokabeln für Hör-Aufgaben (Englisch Klasse 3, BW-Grundwortschatz) ---------- */
+  const L_ANIMALS = [["dog","Hund"],["cat","Katze"],["mouse","Maus"],["bird","Vogel"],["fish","Fisch"],["horse","Pferd"],["cow","Kuh"],["pig","Schwein"],["sheep","Schaf"],["duck","Ente"],["rabbit","Hase"],["bear","Bär"],["lion","Löwe"],["elephant","Elefant"],["monkey","Affe"],["frog","Frosch"],["spider","Spinne"],["bee","Biene"],["snake","Schlange"],["owl","Eule"],["fox","Fuchs"],["butterfly","Schmetterling"],["turtle","Schildkröte"]];
+  const L_FOOD = [["apple","Apfel"],["banana","Banane"],["bread","Brot"],["cheese","Käse"],["milk","Milch"],["water","Wasser"],["juice","Saft"],["egg","Ei"],["cake","Kuchen"],["ice cream","Eis"],["chicken","Hähnchen"],["rice","Reis"],["strawberry","Erdbeere"],["cherry","Kirsche"],["potato","Kartoffel"],["sweets","Süßigkeiten"]];
+  const L_SCHOOL = [["book","Buch"],["pencil","Bleistift"],["pen","Füller"],["rubber","Radiergummi"],["ruler","Lineal"],["schoolbag","Schulranzen"],["scissors","Schere"],["glue","Klebstoff"],["chair","Stuhl"],["table","Tisch"],["door","Tür"],["window","Fenster"],["blackboard","Tafel"],["teacher","Lehrerin oder Lehrer"]];
+  const L_FAMILY = [["mother","Mutter"],["father","Vater"],["brother","Bruder"],["sister","Schwester"],["grandma","Oma"],["grandpa","Opa"],["aunt","Tante"],["uncle","Onkel"],["family","Familie"]];
+  const L_BODY = [["head","Kopf"],["foot","Fuß"],["leg","Bein"],["eye","Auge"],["ear","Ohr"],["mouth","Mund"],["hair","Haare"],["tooth","Zahn"],["knee","Knie"],["nose","Nase"]];
+  const L_CLOTHES = [["trousers","Hose"],["shoes","Schuhe"],["dress","Kleid"],["hat","Hut"],["skirt","Rock"],["jumper","Pullover"]];
+  const L_COLOURS = [["red","rot"],["blue","blau"],["green","grün"],["yellow","gelb"],["orange","orange"],["purple","lila"],["pink","rosa"],["brown","braun"],["black","schwarz"],["white","weiß"],["grey","grau"]];
+  const L_WEATHER = [["It's raining today.","Es regnet."],["It's sunny today.","Die Sonne scheint."],["It's snowing today.","Es schneit."],["It's windy today.","Es ist windig."],["It's cloudy today.","Es ist bewölkt."]];
+  const L_DAYS = [["Monday","Montag"],["Tuesday","Dienstag"],["Wednesday","Mittwoch"],["Thursday","Donnerstag"],["Friday","Freitag"],["Saturday","Samstag"],["Sunday","Sonntag"]];
+  const L_CLASS = [["Open your book, please.","das Buch aufschlagen"],["Close the door, please.","die Tür schließen"],["Stand up, please.","aufstehen"],["Sit down, please.","dich hinsetzen"],["Be quiet, please.","leise sein"],["Listen carefully.","gut zuhören"],["Look at the board.","zur Tafel schauen"],["Wash your hands.","die Hände waschen"],["Put on your shoes.","die Schuhe anziehen"],["Clean up, please.","aufräumen"]];
+  const L_WORD_CATS = [L_ANIMALS, L_FOOD, L_SCHOOL, L_FAMILY, L_BODY, L_CLOTHES];
+  const EN_NUM = {1:"one",2:"two",3:"three",4:"four",5:"five",6:"six",7:"seven",8:"eight",9:"nine",10:"ten",11:"eleven",12:"twelve",13:"thirteen",14:"fourteen",15:"fifteen",16:"sixteen",17:"seventeen",18:"eighteen",19:"nineteen",20:"twenty",30:"thirty",40:"forty",50:"fifty",60:"sixty",70:"seventy",80:"eighty",90:"ninety",100:"one hundred"};
+  const EN_NUM_KEYS = Object.keys(EN_NUM).map(Number);
+  const L_PLURALS = ["cats","dogs","birds","rabbits","horses","frogs"];
+  /* korrekte Bedeutung plus 2 andere aus derselben Gruppe */
+  function lOpts(pair, table){
+    const wrong = shuffle(table.filter(x=>x[1] !== pair[1])).slice(0,2).map(x=>x[1]);
+    return [pair[1]].concat(wrong);
+  }
+
   const GENERATORS = {
     /* Klasse 2: Plus & Minus bis 100 */
     pm100(){
@@ -413,6 +434,38 @@
         return tfmt(H,M)+" Uhr";
       });
       return mc("Beginn "+tfmt(h,m)+" Uhr, Dauer "+dauer+" Minuten. Wann ist Schluss?", [richtig].concat(alt), 0, "⏱️");
+    },
+    /* Klasse 3: Englisch-Hörverstehen – zieht immer neue Kombinationen aus den Vokabeltabellen */
+    listen(){
+      const v = rnd(8);
+      if(v <= 2){ /* Einzelwort hören */
+        const cat = pick(L_WORD_CATS), w = pick(cat);
+        return hear(w[0], "Tippe an, was du gehört hast:", lOpts(w, cat), 0);
+      }
+      if(v <= 4){ /* Zahl hören und eintippen */
+        const n = pick(EN_NUM_KEYS);
+        return Object.assign(nm("Welche Zahl hast du gehört? Tippe sie ein.", n, null, "🎧"), { say: EN_NUM[n] });
+      }
+      if(v === 5){ /* Farbe hören */
+        const c = pick(L_COLOURS);
+        return hear(c[0], "Welche Farbe hast du gehört?", lOpts(c, L_COLOURS), 0);
+      }
+      /* Sätze hören */
+      const s = rnd(7);
+      if(s === 0){ const c = pick(L_COLOURS);
+        return hear("My favourite colour is "+c[0]+".", "Welche Lieblingsfarbe hörst du?", lOpts(c, L_COLOURS), 0); }
+      if(s === 1){ const f = pick(L_FOOD);
+        return hear("I like "+f[0]+".", "Was mag die Person gern?", lOpts(f, L_FOOD), 0); }
+      if(s === 2){ const n = 5+rnd(8);
+        return Object.assign(nm("Wie alt ist die Person?", n, null, "🎧"), { say:"I am "+EN_NUM[n]+" years old." }); }
+      if(s === 3){ const n = 2+rnd(5), a = pick(L_PLURALS);
+        return Object.assign(nm("Wie viele Tiere hat die Person?", n, null, "🎧"), { say:"I have got "+EN_NUM[n]+" "+a+"." }); }
+      if(s === 4){ const w = pick(L_WEATHER);
+        return hear(w[0], "Wie ist das Wetter?", lOpts(w, L_WEATHER), 0); }
+      if(s === 5){ const d = pick(L_DAYS);
+        return hear("Today is "+d[0]+".", "Welcher Tag ist heute?", lOpts(d, L_DAYS), 0); }
+      const c = pick(L_CLASS);
+      return hear(c[0], "Was sollst du tun?", lOpts(c, L_CLASS), 0);
     }
   };
     /* ---------- Ferien-Camp Klasse 2 (Bildungsplan BW: Stoff der 2. Klasse) ---------- */
@@ -684,7 +737,7 @@
   }
   function topicById(tid){ return allTopics().find(t=>t.id===tid); }
   function itemId(topic, item, bankIdx){
-    return bankIdx !== undefined ? topic.id+"#"+bankIdx : topic.id+"§"+item.q+(item.b||"");
+    return bankIdx !== undefined ? topic.id+"#"+bankIdx : topic.id+"§"+item.q+(item.say||"")+(item.b||"");
   }
 
   /* ---------- Aufgaben beschaffen ---------- */
@@ -692,7 +745,7 @@
     for(let tries=0; tries<40; tries++){
       const it = GENERATORS[topic.gen]();
       const id = itemId(topic, it);
-      if(!avoid.has(id) && it.q !== state.lastQ){ return Object.assign({ id, tid:topic.id }, it); }
+      if(!avoid.has(id) && (it.q+(it.say||"")) !== state.lastQ){ return Object.assign({ id, tid:topic.id }, it); }
     }
     const it = GENERATORS[topic.gen]();
     return Object.assign({ id:itemId(topic,it), tid:topic.id }, it);
@@ -837,7 +890,7 @@
     state.input = ""; state.locked = false;
     if(state.solved >= state.total || state.queue.length === 0){ finishRound(); return; }
     state.current = state.queue.shift();
-    state.lastQ = state.current.q;
+    state.lastQ = state.current.q + (state.current.say||"");
     renderItem();
   }
   function renderItem(){
