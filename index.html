@@ -3,57 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Raketen-Trainer</title>
+<title>Ferien-Raketen-Camp</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --space-1:#141838;
-    --space-2:#2a1d5e;
-    --card:#232a5e;
-    --card-2:#2f3775;
-    --line:#3d468f;
-    --star:#ffd447;
-    --ok:#4ade80;
-    --cyan:#5be3ef;
-    --text:#f4f6ff;
-    --muted:#a7afdb;
-    --radius:26px;
+    --space-1:#141838; --space-2:#2a1d5e;
+    --card:#232a5e; --line:#3d468f;
+    --star:#ffd447; --text:#f4f6ff; --muted:#a7afdb; --radius:26px;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; margin:0; }
   body{
-    font-family:'Nunito', system-ui, sans-serif;
-    color:var(--text);
+    font-family:'Nunito', system-ui, sans-serif; color:var(--text);
     background:linear-gradient(180deg, var(--space-1) 0%, var(--space-2) 100%);
-    overflow:hidden;
-    touch-action:manipulation;
-    user-select:none;
-    -webkit-user-select:none;
+    overflow:hidden; touch-action:manipulation; user-select:none; -webkit-user-select:none;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:26px; padding:20px; text-align:center;
   }
   h1,.card{ font-family:'Fredoka','Nunito',system-ui,sans-serif; }
 
-  /* Sternenhimmel */
   #sky{ position:fixed; inset:0; pointer-events:none; z-index:0; }
-  #sky .dot{
-    position:absolute; background:#fff; border-radius:50%;
-    animation:twinkle 3s ease-in-out infinite;
-  }
+  #sky .dot{ position:absolute; background:#fff; border-radius:50%; animation:twinkle 3s ease-in-out infinite; }
   @keyframes twinkle{ 0%,100%{opacity:.15} 50%{opacity:.85} }
 
   header, main{ position:relative; z-index:1; }
-  h1{
-    margin:0; font-size:clamp(2rem, 8vmin, 3.4rem); font-weight:700; line-height:1.1;
-  }
+  h1{ margin:0; font-size:clamp(2rem, 8vmin, 3.4rem); font-weight:700; line-height:1.1; }
   h1 .accent{ color:var(--star); }
   .tagline{ color:var(--muted); margin:10px 0 0; font-size:clamp(1rem,3vmin,1.2rem); font-weight:800; }
 
-  main{
-    display:grid; gap:18px; width:min(560px, 100%);
-  }
+  main{ display:grid; gap:18px; width:min(560px, 100%); }
   .card{
     display:flex; align-items:center; gap:18px; text-align:left;
     background:var(--card); border:2px solid var(--line); border-radius:var(--radius);
@@ -61,100 +41,37 @@
     transition:transform .1s, border-color .15s;
   }
   .card:active{ transform:scale(.97); }
-  .card .emoji{
-    font-size:clamp(2.4rem, 9vmin, 3.4rem); flex:none;
-    filter:drop-shadow(0 3px 6px rgba(0,0,0,.4));
-  }
+  .card .emoji{ font-size:clamp(2.4rem, 9vmin, 3.4rem); flex:none; filter:drop-shadow(0 3px 6px rgba(0,0,0,.4)); }
   .card .name{ font-size:clamp(1.3rem, 5vmin, 1.8rem); font-weight:600; }
   .card .desc{ font-family:'Nunito'; color:var(--muted); font-weight:800; font-size:clamp(.85rem, 2.6vmin, 1rem); margin-top:2px; }
   .card .go{
     margin-left:auto; flex:none; width:52px; height:52px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    font-size:1.5rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700;
   }
-  .card.einmaleins{ border-color:var(--ok); }
-  .card.einmaleins .go{ background:var(--ok); color:#0d2b16; }
-  .card.groessen{ border-color:var(--cyan); }
-  .card.groessen .go{ background:var(--cyan); color:#083035; }
-  .card.plus{ border-color:var(--star); }
-  .card.plus .go{ background:var(--star); color:#3a2c00; }
-  .card.minus{ border-color:#ff6b7a; }
-  .card.minus .go{ background:#ff6b7a; color:#3d0a12; }
-  .card.plus1000{ border-color:#b28dff; }
-  .card.plus1000 .go{ background:#b28dff; color:#241147; }
   .card.ferien2{ border-color:#ffa94d; }
   .card.ferien2 .go{ background:#ffa94d; color:#3d2405; }
   .card.ferien3{ border-color:#2dd4bf; }
   .card.ferien3 .go{ background:#2dd4bf; color:#042f2a; }
 
-  /* Weitere Trainer einfach als zusätzliche <a class="card ..."> ergänzen */
-
   footer{ position:relative; z-index:1; color:var(--muted); font-weight:800; font-size:.9rem; }
 
-  @media (prefers-reduced-motion: reduce){
-    *{ animation:none !important; transition:none !important; }
-  }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
 </style>
 </head>
 <body>
 <div id="sky"></div>
 
 <header>
-  <h1>🚀 Raketen<span class="accent">-</span>Trainer</h1>
-  <p class="tagline">Wähle dein Training und sammle Sterne!</p>
+  <h1>🚀 Ferien<span class="accent">-</span>Raketen-Camp</h1>
+  <p class="tagline">Wähle dein Camp und sammle Sterne!</p>
 </header>
 
 <main>
-  <a class="card einmaleins" href="einmaleins-trainer.html">
-    <span class="emoji">✖️</span>
-    <span>
-      <span class="name">1×1-Trainer</span><br>
-      <span class="desc">Das kleine Einmaleins – Reihen üben und Blitzrunden</span>
-    </span>
-    <span class="go">➜</span>
-  </a>
-
-  <a class="card groessen" href="umrechner.html">
-    <span class="emoji">📏</span>
-    <span>
-      <span class="name">Größen-Trainer</span><br>
-      <span class="desc">Gewichte, Flüssigkeiten, Zeiten und Längen umrechnen</span>
-    </span>
-    <span class="go">➜</span>
-  </a>
-
-  <a class="card plus" href="plus.html">
-    <span class="emoji">➕</span>
-    <span>
-      <span class="name">Plus-Trainer</span><br>
-      <span class="desc">Plusrechnen bis 100 – mit und ohne Zehnerübergang</span>
-    </span>
-    <span class="go">➜</span>
-  </a>
-
-  <a class="card minus" href="minus.html">
-    <span class="emoji">➖</span>
-    <span>
-      <span class="name">Minus-Trainer</span><br>
-      <span class="desc">Halbschriftlich minus rechnen bis 1000 – Schritt für Schritt</span>
-    </span>
-    <span class="go">➜</span>
-  </a>
-
-  <a class="card plus1000" href="plus1000.html">
-    <span class="emoji">🧮</span>
-    <span>
-      <span class="name">Plus-Trainer bis 1000</span><br>
-      <span class="desc">Halbschriftlich plus rechnen bis 1000 – Schritt für Schritt</span>
-    </span>
-    <span class="go">➜</span>
-  </a>
-
   <a class="card ferien2" href="ferien-klasse2.html">
     <span class="emoji">🏕️</span>
     <span>
-      <span class="name">Ferien-Camp Klasse 2</span><br>
-      <span class="desc">Mathe &amp; Deutsch aus Klasse 2 wiederholen – mit Tagesmission und gespeichertem Fortschritt</span>
+      <span class="name">Camp Klasse 2</span><br>
+      <span class="desc">Mathe &amp; Deutsch wiederholen – mit Tagesmission und gespeichertem Fortschritt</span>
     </span>
     <span class="go">➜</span>
   </a>
@@ -162,14 +79,14 @@
   <a class="card ferien3" href="ferien-klasse3.html">
     <span class="emoji">🏝️</span>
     <span>
-      <span class="name">Ferien-Camp Klasse 3</span><br>
-      <span class="desc">Mathe, Deutsch &amp; Englisch aus Klasse 3 – mit Tagesmission und gespeichertem Fortschritt</span>
+      <span class="name">Camp Klasse 3</span><br>
+      <span class="desc">Mathe, Deutsch &amp; Englisch wiederholen – mit Tagesmission und gespeichertem Fortschritt</span>
     </span>
     <span class="go">➜</span>
   </a>
 </main>
 
-<footer>Viel Erfolg, Astronaut! 🧑‍🚀</footer>
+<footer>Viel Erfolg, Astronauten! 🧑‍🚀</footer>
 
 <script>
 (function(){
