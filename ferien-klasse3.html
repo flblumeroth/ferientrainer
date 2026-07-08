@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ferien-Camp Klasse 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --space-1:#141838; --space-2:#2a1d5e;
+    --card:#232a5e; --card-2:#2f3775; --line:#3d468f;
+    --star:#ffd447; --ok:#4ade80; --bad:#ff6b7a; --cyan:#5be3ef;
+    --text:#f4f6ff; --muted:#a7afdb; --radius:22px;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; margin:0; }
+  body{
+    font-family:'Nunito', system-ui, sans-serif; color:var(--text);
+    background:linear-gradient(180deg, var(--space-1) 0%, var(--space-2) 100%);
+    touch-action:manipulation; user-select:none; -webkit-user-select:none;
+  }
+  h1,h2,h3,.q,.pad button,.big-btn,.opt,.topic .t-name,.mission .m-name{ font-family:'Fredoka','Nunito',system-ui,sans-serif; }
+
+  #sky{ position:fixed; inset:0; pointer-events:none; z-index:0; }
+  #sky .dot{ position:absolute; background:#fff; border-radius:50%; animation:twinkle 3s ease-in-out infinite; }
+  @keyframes twinkle{ 0%,100%{opacity:.15} 50%{opacity:.85} }
+
+  .screen{
+    position:fixed; inset:0; z-index:1; display:none; flex-direction:column; align-items:center;
+    padding:max(14px, env(safe-area-inset-top)) 16px max(14px, env(safe-area-inset-bottom));
+    overflow-y:auto;
+  }
+  .screen.active{ display:flex; }
+
+  /* ---------- Übersicht ---------- */
+  #screen-home{ gap:14px; }
+  .home-head{ text-align:center; margin-top:6px; }
+  .logo{ font-size:clamp(1.6rem, 6vmin, 2.6rem); font-weight:700; margin:0; line-height:1.15; }
+  .logo .x{ color:var(--star); }
+  .head-stats{ color:var(--star); font-weight:800; margin:6px 0 0; font-size:clamp(.95rem,3vmin,1.1rem); }
+  .head-stats .sep{ color:var(--muted); margin:0 8px; }
+
+  .mission{
+    width:min(620px,100%); display:flex; align-items:center; gap:14px;
+    background:var(--card); border:2px solid var(--star); border-radius:var(--radius);
+    padding:14px 18px; cursor:pointer; transition:transform .08s;
+  }
+  .mission:active{ transform:scale(.98); }
+  .mission .m-icon{ font-size:2.2rem; flex:none; }
+  .mission .m-name{ font-size:clamp(1.15rem,4vmin,1.4rem); font-weight:600; }
+  .mission .m-sub{ color:var(--muted); font-weight:800; font-size:.9rem; }
+  .mission .m-go{ margin-left:auto; font-size:1.5rem; color:var(--star); flex:none; }
+  .mission.done{ border-color:var(--ok); }
+  .mission.errbox{ border-color:var(--bad); }
+  .mission.errbox .m-go{ color:var(--bad); }
+  .mission.disabled{ opacity:.45; pointer-events:none; }
+
+  .subject{ width:min(620px,100%); }
+  .subject h2{
+    margin:8px 0 10px; font-size:clamp(1.15rem,4vmin,1.4rem); font-weight:600;
+    color:var(--cyan); letter-spacing:.02em;
+  }
+  .topics{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:420px){ .topics{ grid-template-columns:1fr; } }
+  .topic{
+    display:flex; align-items:center; gap:12px; text-align:left;
+    background:var(--card); border:2px solid var(--line); border-radius:18px;
+    padding:12px 14px; cursor:pointer; color:var(--text); transition:transform .08s;
+  }
+  .topic:active{ transform:scale(.97); }
+  .topic .t-icon{ font-size:1.9rem; flex:none; }
+  .topic .t-name{ font-size:clamp(1rem,3.4vmin,1.15rem); font-weight:600; line-height:1.2; }
+  .topic .t-stars{ color:var(--star); font-weight:800; font-size:.9rem; letter-spacing:.08em; }
+  .topic .t-stars .off{ opacity:.25; }
+
+  .home-foot{ color:var(--muted); font-weight:800; font-size:.8rem; margin:8px 0 4px; }
+  .home-foot button{
+    background:none; border:none; color:var(--muted); font:inherit; cursor:pointer; text-decoration:underline;
+  }
+
+  /* ---------- Spielscreen ---------- */
+  #screen-play{ justify-content:space-between; gap:8px; overflow:hidden; }
+  .topbar{ width:min(640px,100%); display:flex; align-items:center; gap:12px; }
+  .icon-btn{
+    background:var(--card); border:2px solid var(--line); color:var(--text);
+    border-radius:14px; width:46px; height:46px; font-size:1.2rem; cursor:pointer; flex:none;
+  }
+  .icon-btn:active{ transform:scale(.92); }
+  .track{ flex:1; height:18px; background:var(--card); border:2px solid var(--line); border-radius:999px; position:relative; }
+  .track .fill{
+    position:absolute; inset:2px auto 2px 2px; width:0%;
+    background:linear-gradient(90deg, var(--cyan), var(--ok)); border-radius:999px; transition:width .4s ease;
+  }
+  .track .rocket{
+    position:absolute; top:50%; left:0%; transform:translate(-40%,-54%); font-size:1.7rem;
+    transition:left .4s ease; filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));
+  }
+  .track.launching .rocket{ animation:liftoff .9s ease-in forwards; }
+  @keyframes liftoff{ to{ transform:translate(20%,-260%) rotate(-20deg); opacity:0; } }
+  .hud{ display:flex; gap:10px; align-items:center; flex:none; font-weight:800; }
+  .hud .stars{ color:var(--star); }
+  .hud .streak{ color:var(--bad); min-width:2.4em; text-align:right; }
+
+  .stage{
+    flex:1; width:min(640px,100%); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:8px; position:relative; min-height:0;
+  }
+  .t-badge{
+    color:var(--muted); font-weight:800; font-size:clamp(.85rem,2.8vmin,1rem);
+    background:var(--card); border:2px solid var(--line); border-radius:999px; padding:4px 14px;
+  }
+  .bigemo{ font-size:clamp(3rem, 12vmin, 5rem); line-height:1; margin:0; }
+  .hear{
+    font-family:'Fredoka'; background:var(--cyan); color:#083035;
+    border:none; border-radius:999px; padding:12px 28px;
+    font-size:clamp(1.1rem, 4vmin, 1.4rem); font-weight:600; cursor:pointer;
+    border-bottom:4px solid rgba(0,0,0,.3); transition:transform .08s;
+  }
+  .hear:active{ transform:scale(.94); }
+  .q{
+    font-size:clamp(1.9rem, 8.5vmin, 3.6rem); font-weight:600; margin:0;
+    letter-spacing:.02em; text-align:center; max-width:100%;
+  }
+  .q.long{ font-size:clamp(1.15rem, 4.6vmin, 1.7rem); line-height:1.45; font-family:'Nunito'; font-weight:800; }
+  .answer{
+    min-width:3.2em; text-align:center; font-family:'Fredoka';
+    font-size:clamp(1.8rem, 8vmin, 3.2rem); font-weight:600;
+    background:var(--card); border:3px dashed var(--line); border-radius:18px;
+    padding:2px 18px; min-height:1.5em; line-height:1.5em;
+  }
+  .answer .unit{ color:var(--muted); font-size:.6em; margin-left:.25em; }
+  .stage.good .answer{ border-color:var(--ok); border-style:solid; color:var(--ok); }
+  .stage.bad .answer{ border-color:var(--bad); border-style:solid; color:var(--bad); animation:shake .4s; }
+  @keyframes shake{ 25%{transform:translateX(-8px)} 50%{transform:translateX(8px)} 75%{transform:translateX(-5px)} }
+  .feedback{
+    min-height:1.6em; margin:0; font-weight:800; text-align:center;
+    font-size:clamp(.95rem,3.2vmin,1.2rem); max-width:100%;
+  }
+  .feedback.good{ color:var(--ok); }
+  .feedback.bad{ color:var(--bad); }
+
+  .opts{ width:min(560px,100%); display:grid; grid-template-columns:1fr 1fr; gap:10px; padding-bottom:4px; }
+  .opts.single{ grid-template-columns:1fr; }
+  .opt{
+    border:2px solid var(--line); border-radius:18px; min-height:clamp(52px, 8.5vh, 70px);
+    font-size:clamp(1.1rem, 4vmin, 1.5rem); font-weight:600; padding:8px 14px;
+    background:var(--card-2); color:var(--text); cursor:pointer;
+    border-bottom-width:4px; transition:transform .06s;
+  }
+  .opt:active{ transform:scale(.96); }
+  .opt.right{ background:rgba(74,222,128,.2); border-color:var(--ok); color:var(--ok); }
+  .opt.wrongpick{ background:rgba(255,107,122,.18); border-color:var(--bad); color:var(--bad); }
+  .opt:disabled{ cursor:default; }
+
+  .pad{ width:min(430px,100%); display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding-bottom:4px; }
+  .pad button{
+    border:none; border-radius:18px; min-height:clamp(48px, 8.2vh, 68px);
+    font-size:clamp(1.4rem, 4.8vmin, 2rem); font-weight:600;
+    background:var(--card-2); color:var(--text); cursor:pointer;
+    border-bottom:4px solid rgba(0,0,0,.35); transition:transform .06s;
+  }
+  .pad button:active{ transform:scale(.94); }
+  .pad .del{ background:var(--card); color:var(--muted); }
+  .pad .go{ background:var(--ok); color:#0d2b16; }
+
+  .spark{ position:absolute; left:50%; top:40%; font-size:1.4rem; pointer-events:none; animation:fly .9s ease-out forwards; }
+  @keyframes fly{ to{ transform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; } }
+
+  /* ---------- Ergebnisscreen ---------- */
+  #screen-end{ justify-content:center; gap:16px; text-align:center; }
+  .end-stars{ font-size:clamp(3rem,12vmin,5rem); letter-spacing:.1em; }
+  .end-stars span{ display:inline-block; opacity:.25; transform:scale(.6); }
+  .end-stars span.won{ opacity:1; color:var(--star); animation:pop .5s ease backwards; }
+  .end-stars span:nth-child(2).won{ animation-delay:.25s }
+  .end-stars span:nth-child(3).won{ animation-delay:.5s }
+  @keyframes pop{ from{ transform:scale(0) rotate(-30deg);} 70%{ transform:scale(1.25);} to{ transform:scale(1);} }
+  .end-title{ font-size:clamp(1.6rem,6vmin,2.4rem); font-weight:700; margin:0; }
+  .end-stats{ color:var(--muted); font-weight:800; margin:0; line-height:1.8; }
+  .end-stats b{ color:var(--text); }
+  .big-btn{
+    border:none; border-radius:var(--radius); padding:16px 34px;
+    font-size:1.3rem; font-weight:600; cursor:pointer;
+    background:var(--ok); color:#0d2b16; border-bottom:4px solid rgba(0,0,0,.3);
+  }
+  .big-btn.alt{ background:var(--card-2); color:var(--text); }
+  .big-btn:active{ transform:scale(.96); }
+
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<div id="sky"></div>
+
+<!-- ===================== ÜBERSICHT ===================== -->
+<section id="screen-home" class="screen active">
+  <div class="home-head">
+    <h1 class="logo" id="logo"></h1>
+    <p class="head-stats"><span id="hs-stars">⭐ 0 Sterne</span><span class="sep">·</span><span id="hs-missions">🏅 0 Missionen</span></p>
+  </div>
+  <div class="mission" id="card-mission">
+    <span class="m-icon">🛰️</span>
+    <span><span class="m-name">Tagesmission</span><br><span class="m-sub" id="mission-sub">Bunte Mischung aus allen Fächern</span></span>
+    <span class="m-go">➜</span>
+  </div>
+  <div class="mission errbox" id="card-errbox">
+    <span class="m-icon">🔁</span>
+    <span><span class="m-name">Fehler üben</span><br><span class="m-sub" id="errbox-sub">Keine offenen Aufgaben – super!</span></span>
+    <span class="m-go">➜</span>
+  </div>
+  <div id="subjects"></div>
+  <p class="home-foot">Fortschritt wird auf diesem Gerät gespeichert · <button id="btn-reset">Fortschritt löschen</button></p>
+</section>
+
+<!-- ===================== SPIEL ===================== -->
+<section id="screen-play" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" id="btn-home" title="Zurück zur Übersicht">🏠</button>
+    <div class="track" id="track">
+      <div class="fill" id="track-fill"></div>
+      <div class="rocket" id="rocket">🚀</div>
+    </div>
+    <div class="hud">
+      <span class="stars" id="hud-stars">⭐ 0</span>
+      <span class="streak" id="hud-streak"></span>
+    </div>
+    <button class="icon-btn" id="btn-sound" title="Ton an/aus">🔊</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <span class="t-badge" id="t-badge"></span>
+    <p class="bigemo" id="bigemo" hidden></p>
+    <p class="q" id="question"></p>
+    <button class="hear" id="hearbtn" hidden>🔊 Anhören</button>
+    <div class="answer" id="answer" hidden><span id="answer-num">&nbsp;</span><span class="unit" id="answer-unit"></span></div>
+    <p class="feedback" id="feedback">&nbsp;</p>
+  </div>
+
+  <div class="opts" id="opts" hidden></div>
+  <div class="pad" id="pad" hidden>
+    <button data-d="1">1</button><button data-d="2">2</button><button data-d="3">3</button>
+    <button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button>
+    <button data-d="7">7</button><button data-d="8">8</button><button data-d="9">9</button>
+    <button class="del" data-a="del">⌫</button><button data-d="0">0</button><button class="go" data-a="go">✔</button>
+  </div>
+</section>
+
+<!-- ===================== ERGEBNIS ===================== -->
+<section id="screen-end" class="screen">
+  <div class="end-stars" id="end-stars"><span>★</span><span>★</span><span>★</span></div>
+  <h2 class="end-title" id="end-title">Super gemacht!</h2>
+  <p class="end-stats" id="end-stats"></p>
+  <button class="big-btn" id="btn-again">Nochmal</button>
+  <button class="big-btn alt" id="btn-menu">Zur Übersicht</button>
+</section>
+
+<script>
+(function(){
+  "use strict";
+
+  /*DATA-START*/
+  /* ---------- Hilfen (auch für Aufgaben-Daten) ---------- */
+  const rnd = n => Math.floor(Math.random()*n);
+  const pick = arr => arr[rnd(arr.length)];
+  const shuffle = arr => { const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  /* Multiple-Choice-Aufgabe: q Frage, o Antworten, a Index der richtigen, b großes Emoji (optional), e Erklärung (optional) */
+  function mc(q, o, a, b, e){ return { t:"mc", q, o, a, b, e }; }
+  /* Zahlen-Aufgabe: q Frage, a Zahl, u Einheit (optional), b Emoji (optional), e Erklärung (optional) */
+  function nm(q, a, u, b, e){ return { t:"num", q, a, u, b, e }; }
+  /* Hör-Aufgabe (Englisch): say wird auf Knopfdruck vorgesprochen */
+  function hear(say, q, o, a, e){ return { t:"mc", q, o, a, say, e, b:"🎧" }; }
+  const tfmt = (h,m) => h + ":" + String(m).padStart(2,"0");
+
+  /* ---------- Aufgaben-Generatoren (Mathe) ---------- */
+  const UHR_VOLL = { "🕐":"1:00","🕑":"2:00","🕒":"3:00","🕓":"4:00","🕔":"5:00","🕕":"6:00","🕖":"7:00","🕗":"8:00","🕘":"9:00","🕙":"10:00","🕚":"11:00","🕛":"12:00" };
+  const UHR_HALB = { "🕜":"1:30","🕝":"2:30","🕞":"3:30","🕟":"4:30","🕠":"5:30","🕡":"6:30","🕢":"7:30","🕣":"8:30","🕤":"9:30","🕥":"10:30","🕦":"11:30","🕧":"12:30" };
+
+  const GENERATORS = {
+    /* Klasse 2: Plus & Minus bis 100 */
+    pm100(){
+      const v = rnd(4);
+      if(v === 0){ /* plus ohne Übergang */
+        const u1=1+rnd(8), u2=1+rnd(9-u1), t1=1+rnd(8), t2=1+rnd(9-t1);
+        return nm((t1*10+u1)+" + "+(t2*10+u2)+" = ?", t1*10+u1+t2*10+u2);
+      }
+      if(v === 1){ /* plus mit Übergang */
+        const u1=1+rnd(9), u2=(10-u1)+rnd(u1), t1=1+rnd(7), t2=1+rnd(8-t1);
+        return nm((t1*10+u1)+" + "+(t2*10+u2)+" = ?", t1*10+u1+t2*10+u2);
+      }
+      if(v === 2){ /* minus ohne Übergang */
+        const u1=2+rnd(8), u2=1+rnd(u1-1), t1=2+rnd(8), t2=1+rnd(t1-1);
+        return nm((t1*10+u1)+" − "+(t2*10+u2)+" = ?", (t1-t2)*10+(u1-u2));
+      }
+      /* minus mit Übergang */
+      const u1=1+rnd(8), u2=(u1+1)+rnd(9-u1), t1=3+rnd(7), t2=1+rnd(t1-2);
+      return nm((t1*10+u1)+" − "+(t2*10+u2)+" = ?", (t1*10+u1)-(t2*10+u2));
+    },
+    /* Klasse 2: Einmaleins-Kernaufgaben, Quadrataufgaben und erste Geteiltaufgaben */
+    mulKern(){
+      const v = rnd(3);
+      if(v === 0){ const r = pick([1,2,5,10]), f = 1+rnd(10);
+        return rnd(2) ? nm(r+" · "+f+" = ?", r*f) : nm(f+" · "+r+" = ?", r*f); }
+      if(v === 1){ const n = 2+rnd(9); return nm(n+" · "+n+" = ?", n*n); }
+      const r = pick([2,5,10]), f = 1+rnd(10);
+      return nm((r*f)+" : "+r+" = ?", f);
+    },
+    /* Klasse 2: Verdoppeln & Halbieren */
+    doppel(){
+      if(rnd(2)){ const a = 2+rnd(48); return nm("Das Doppelte von "+a+" = ?", a*2); }
+      const h = 2+rnd(48); return nm("Die Hälfte von "+(h*2)+" = ?", h);
+    },
+    /* Klasse 2: Zahlen bis 100 */
+    zahlen100(){
+      const v = rnd(4);
+      if(v === 0){ let a=1+rnd(99), b=1+rnd(99); while(b===a) b=1+rnd(99);
+        return mc("Welche Zahl ist größer?", [String(a),String(b)], a>b?0:1); }
+      if(v === 1){ const a=1+rnd(98); return nm("Welche Zahl kommt direkt nach "+a+"?", a+1); }
+      if(v === 2){ const a=2+rnd(98); return nm("Welche Zahl kommt direkt vor "+a+"?", a-1); }
+      const s=1+rnd(59); return nm("Immer +10: "+s+", "+(s+10)+", "+(s+20)+", ?", s+30);
+    },
+    /* Klasse 2: Uhrzeit – Emoji-Uhren (voll/halb) plus Viertelstunden und Sprechweisen */
+    uhr(){
+      const v = rnd(3);
+      if(v < 2){
+        const tab = v === 0 ? UHR_VOLL : UHR_HALB;
+        const keys = Object.keys(tab);
+        const k = pick(keys);
+        const richtig = tab[k]+" Uhr";
+        const falsch = shuffle(keys.filter(x=>x!==k)).slice(0,3).map(x=>tab[x]+" Uhr");
+        const opts = shuffle([richtig].concat(falsch));
+        return mc("Wie spät ist es?", opts, opts.indexOf(richtig), k);
+      }
+      /* Sprechweisen: Viertel nach / Viertel vor / halb */
+      const h = 1+rnd(12), prev = h === 1 ? 12 : h-1;
+      const art = rnd(3);
+      let wort, richtig;
+      if(art === 0){ wort = "Viertel nach "+h; richtig = tfmt(h,15); }
+      else if(art === 1){ wort = "Viertel vor "+h; richtig = tfmt(prev,45); }
+      else{ wort = "halb "+h; richtig = tfmt(prev,30); }
+      const pool = [tfmt(h,45), tfmt(prev,15), tfmt(h,30), tfmt(prev,30), tfmt(h,15), tfmt(prev,45), tfmt(h,0)]
+        .filter((x,i,arr)=>x !== richtig && arr.indexOf(x) === i);
+      const opts = [richtig+" Uhr"].concat(shuffle(pool).slice(0,3).map(x=>x+" Uhr"));
+      return mc("„"+wort+"“ – wie spät ist das?", opts, 0, "🕰️");
+    },
+    /* Klasse 3: Plus & Minus bis 1000 */
+    pm1000(){
+      if(rnd(2)){ /* plus, Summe <= 1000 */
+        const u1=rnd(10), u2=rnd(10), t1=rnd(10), t2=rnd(10), h1=1+rnd(7), h2=1+rnd(8-h1);
+        const a=h1*100+t1*10+u1, b=h2*100+t2*10+u2;
+        return nm(a+" + "+b+" = ?", a+b);
+      }
+      /* minus, Ergebnis > 0 */
+      const h1=2+rnd(8), h2=1+rnd(h1-1), t1=rnd(10), t2=rnd(10), u1=rnd(10), u2=rnd(10);
+      const a=h1*100+t1*10+u1, b=h2*100+t2*10+u2;
+      if(a-b <= 0) return GENERATORS.pm1000();
+      return nm(a+" − "+b+" = ?", a-b);
+    },
+    /* Klasse 3: Einmaleins & Geteilt */
+    muldiv(){
+      const r = 2+rnd(9), f = 2+rnd(9);
+      if(rnd(2)) return nm(r+" · "+f+" = ?", r*f);
+      return nm((r*f)+" : "+r+" = ?", f);
+    },
+    /* Klasse 3: Zahlen bis 1000 */
+    zahlen1000(){
+      const v = rnd(4);
+      if(v === 0){ let a; do{ a = 11+rnd(980); }while(a%10===0);
+        const ger = Math.round(a/10)*10;
+        return nm("Runde "+a+" auf den nächsten Zehner:", ger); }
+      if(v === 1){ let a; do{ a = 101+rnd(890); }while(a%100===0);
+        const ger = Math.round(a/100)*100;
+        return nm("Runde "+a+" auf den nächsten Hunderter:", ger); }
+      if(v === 2){ let a=100+rnd(900), b=100+rnd(900); while(b===a) b=100+rnd(900);
+        return mc("Welche Zahl ist größer?", [String(a),String(b)], a>b?0:1); }
+      const a=100+rnd(800); return nm(a+" + 100 = ?", a+100);
+    },
+    /* Klasse 3: Größen umrechnen (ganze Zahlen) */
+    groessen(){
+      const paare = [ ["m","cm",100], ["cm","mm",10], ["km","m",1000], ["kg","g",1000], ["l","ml",1000], ["min","s",60], ["h","min",60], ["€","ct",100] ];
+      const p = pick(paare), n = 1+rnd(9);
+      if(rnd(2)) return nm(n+" "+p[0]+" = ? "+p[1], n*p[2], p[1]);
+      return nm((n*p[2])+" "+p[1]+" = ? "+p[0], n, p[0]);
+    },
+    /* Klasse 3: Division mit Rest */
+    divRest(){
+      const d = 2+rnd(8), q = 2+rnd(8), r = 1+rnd(d-1);
+      const a = d*q + r;
+      const v = rnd(3);
+      if(v === 0){
+        const richtig = q+" Rest "+r;
+        const falsch1 = (q-1)+" Rest "+(r+d);
+        const r2 = (r+1 <= d-1) ? r+1 : r-1;
+        const falsch2 = q+" Rest "+r2;
+        return mc(a+" : "+d+" = ?", [richtig, falsch1, falsch2], 0, null, "Der Rest muss kleiner als "+d+" sein.");
+      }
+      if(v === 1) return nm("Wie oft passt die "+d+" in die "+a+"?", q);
+      return nm(a+" : "+d+" = "+q+" Rest ?", r);
+    },
+    /* Klasse 3: Zeitspannen */
+    zeitspanne(){
+      const h = 7+rnd(11), m = pick([0,15,30,45]);
+      if(rnd(2)){
+        const dauer = 15*(1+rnd(8));
+        const ende = h*60+m+dauer, eh = Math.floor(ende/60), em = ende%60;
+        return nm("Von "+tfmt(h,m)+" Uhr bis "+tfmt(eh,em)+" Uhr – wie viele Minuten sind das?", dauer, "min", "⏱️");
+      }
+      const dauer = 15*(1+rnd(6));
+      const ende = h*60+m+dauer, eh = Math.floor(ende/60), em = ende%60;
+      const richtig = tfmt(eh,em)+" Uhr";
+      const alt = [ende+15, ende-15, ende+30].map(x=>{
+        const H = Math.floor(x/60), M = ((x%60)+60)%60;
+        return tfmt(H,M)+" Uhr";
+      });
+      return mc("Beginn "+tfmt(h,m)+" Uhr, Dauer "+dauer+" Minuten. Wann ist Schluss?", [richtig].concat(alt), 0, "⏱️");
+    }
+  };
+    /* ---------- Ferien-Camp Klasse 3 (Bildungsplan BW: Stoff der 3. Klasse) ---------- */
+  const CONFIG = {
+    storageKey: "raketen_ferien_k3",
+    logoHtml: '🚀 Ferien<span class="x">-</span>Camp · Klasse 3',
+    subjects: [
+      { name:"Mathe", icon:"🔢", topics:[
+        { id:"m_pm",  name:"Plus & Minus bis 1000", icon:"➕", gen:"pm1000" },
+        { id:"m_md",  name:"Mal & Geteilt",         icon:"✖️", gen:"muldiv" },
+        { id:"m_rest", name:"Geteilt mit Rest",     icon:"➗", gen:"divRest" },
+        { id:"m_zr",  name:"Zahlen bis 1000",       icon:"🔟", gen:"zahlen1000" },
+        { id:"m_gr",  name:"Größen umrechnen",      icon:"📏", gen:"groessen" },
+        { id:"m_zeit", name:"Zeitspannen",          icon:"⏱️", gen:"zeitspanne" },
+        { id:"m_sach", name:"Sachaufgaben",         icon:"🧠", bank:[
+          nm("Ein Buch hat 124 Seiten. Lena hat schon 78 gelesen. Wie viele Seiten fehlen noch?", 46, "Seiten", "📖"),
+          nm("Im Bus sitzen 34 Kinder. An der Haltestelle steigen 18 ein und 9 aus. Wie viele Kinder sind jetzt im Bus?", 43, "Kinder", "🚌"),
+          nm("Ein Baumhaus braucht 8 Bretter. Wie viele Bretter brauchen 6 Baumhäuser?", 48, "Bretter", "🌳"),
+          nm("Papa kauft 3 Kisten mit je 6 Flaschen Wasser. Wie viele Flaschen sind das?", 18, "Flaschen", "💧"),
+          nm("24 Kinder bilden Mannschaften mit je 4 Kindern. Wie viele Mannschaften gibt es?", 6, "Teams", "⚽"),
+          nm("Ein Kino hat 250 Plätze. 178 sind besetzt. Wie viele Plätze sind frei?", 72, "Plätze", "🎬"),
+          nm("Mia spart 145 €. Zum Geburtstag bekommt sie 55 € dazu. Wie viel € hat sie jetzt?", 200, "€", "🐷"),
+          nm("Ein Zug hat 7 Wagen mit je 9 Abteilen. Wie viele Abteile sind das?", 63, "Abteile", "🚂"),
+          nm("Auf dem Parkplatz stehen 63 Autos. 27 fahren weg. Wie viele bleiben?", 36, "Autos", "🚗"),
+          nm("Eine Pizza wird in 8 Stücke geteilt. 3 Pizzen – wie viele Stücke?", 24, "Stücke", "🍕"),
+          nm("Tom läuft jeden Tag 2 km. Wie viele km läuft er in einer Woche?", 14, "km", "🏃"),
+          nm("Im Regal stehen 5 Reihen mit je 7 Büchern. Wie viele Bücher sind es?", 35, "Bücher", "📚"),
+          nm("Ein Gärtner pflanzt 456 Tulpen und 244 Rosen. Wie viele Blumen sind das zusammen?", 700, "Blumen", "🌷"),
+          nm("Von 500 Luftballons platzen 138. Wie viele bleiben ganz?", 362, "Ballons", "🎈"),
+        ]},
+      ]},
+      { name:"Deutsch", icon:"📚", topics:[
+        { id:"d_wort", name:"Wortarten & Artikel", icon:"🧩", bank:[
+          mc("Was für ein Wort ist „Freundschaft“?", ["Nomen","Verb","Adjektiv"], 0),
+          mc("Was für ein Wort ist „flüstern“?", ["Nomen","Verb","Adjektiv"], 1),
+          mc("Was für ein Wort ist „gefährlich“?", ["Nomen","Verb","Adjektiv"], 2),
+          mc("Was für ein Wort ist „Gewitter“?", ["Nomen","Verb","Adjektiv"], 0),
+          mc("Was für ein Wort ist „klettern“?", ["Nomen","Verb","Adjektiv"], 1),
+          mc("Was für ein Wort ist „vorsichtig“?", ["Nomen","Verb","Adjektiv"], 2),
+          mc("Welcher Artikel passt: ___ Mädchen?", ["der","die","das"], 2),
+          mc("Welcher Artikel passt: ___ Schmetterling?", ["der","die","das"], 0),
+          mc("Welcher Artikel passt: ___ Ampel?", ["der","die","das"], 1),
+          mc("Welcher Artikel passt: ___ Gebirge?", ["der","die","das"], 2),
+          mc("Welcher Artikel passt: ___ Zwiebel?", ["der","die","das"], 1),
+          mc("Was ist der unbestimmte Artikel zu „der Ball“?", ["ein Ball","eine Ball","einer Ball"], 0),
+          mc("Welches Wort ist ein Pronomen (Fürwort)?", ["er","Hund","bellen"], 0),
+          mc("Welches Pronomen ersetzt „die Kinder“?", ["sie","er","es"], 0),
+          mc("Welches Pronomen ersetzt „der Lehrer“?", ["sie","er","es"], 1),
+          mc("Welches Wort ist KEIN Nomen?", ["Glück","Mut","fröhlich"], 2, null, "„fröhlich“ ist ein Adjektiv."),
+          mc("Aus dem Verb „laufen“ wird das Nomen …", ["das Laufen","der Lauft","die Laufe"], 0),
+          mc("Wie steigert man „schnell“?", ["schnell, schneller, am schnellsten","schnell, schnellste, schnellstens","schnell, mehr schnell, ganz schnell"], 0),
+        ]},
+        { id:"d_zeit", name:"Zeitformen", icon:"⏳", bank:[
+          mc("„gehen“ in der Vergangenheit (Präteritum):", ["ging","gehte","gegangen"], 0),
+          mc("„essen“ in der Vergangenheit (Präteritum):", ["esste","aß","gegessen"], 1),
+          mc("„laufen“ in der Vergangenheit (Präteritum):", ["laufte","gelaufen","lief"], 2),
+          mc("„sehen“ in der Vergangenheit (Präteritum):", ["sah","sehte","gesehen"], 0),
+          mc("„kommen“ in der Vergangenheit (Präteritum):", ["kommte","kam","gekommen"], 1),
+          mc("„fahren“ in der Vergangenheit (Präteritum):", ["fahrte","gefahren","fuhr"], 2),
+          mc("„Ich spiele“ steht in welcher Zeitform?", ["Gegenwart (Präsens)","Vergangenheit (Präteritum)","Zukunft (Futur)"], 0),
+          mc("„Wir lachten“ steht in welcher Zeitform?", ["Gegenwart (Präsens)","Vergangenheit (Präteritum)","Zukunft (Futur)"], 1),
+          mc("„Sie wird singen“ steht in welcher Zeitform?", ["Gegenwart (Präsens)","Vergangenheit (Präteritum)","Zukunft (Futur)"], 2),
+          mc("Perfekt von „spielen“: Ich …", ["habe gespielt","spielte habe","bin gespielt"], 0),
+          mc("Perfekt von „fahren“: Ich …", ["habe gefahrt","bin gefahren","habe fahren"], 1),
+          mc("Setze in die Gegenwart: „Der Hund bellte.“", ["Der Hund bellt.","Der Hund hat gebellt.","Der Hund wird bellen."], 0),
+          mc("Setze in die Vergangenheit: „Ich trinke Saft.“", ["Ich trank Saft.","Ich trinkte Saft.","Ich werde Saft trinken."], 0),
+          mc("„schreiben“ in der Vergangenheit (Präteritum):", ["schreibte","schrieb","geschrieben"], 1),
+          mc("„finden“ in der Vergangenheit (Präteritum):", ["findete","gefunden","fand"], 2),
+          mc("„sein“ in der Vergangenheit (Präteritum): Ich …", ["war","bin gewesen","seite"], 0),
+        ]},
+        { id:"d_recht", name:"Rechtschreib-Profi", icon:"✍️", bank:[
+          mc("Was ist richtig?", ["Bäume","Beume"], 0, null, "Ableiten: Bäume kommt von Baum."),
+          mc("Was ist richtig?", ["Häuser","Heuser"], 0, null, "Ableiten: Häuser kommt von Haus."),
+          mc("Was ist richtig?", ["Reuber","Räuber"], 1, null, "Ableiten: Räuber kommt von Raub."),
+          mc("Was ist richtig?", ["Wald","Walt"], 0, null, "Verlängern: Wäl-der."),
+          mc("Was ist richtig?", ["Berk","Berg"], 1, null, "Verlängern: Ber-ge."),
+          mc("Was ist richtig?", ["gesund","gesunt"], 0, null, "Verlängern: gesun-de."),
+          mc("Was ist richtig?", ["Zahn","Zan"], 0, null, "Dehnungs-h: Zahn."),
+          mc("Was ist richtig?", ["faren","fahren"], 1, null, "Dehnungs-h: fahren."),
+          mc("Was ist richtig?", ["Fehler","Feler"], 0),
+          mc("Was ist richtig?", ["Brüke","Brücke"], 1, null, "Nach kurzem Selbstlaut: ck."),
+          mc("Was ist richtig?", ["plötzlich","plözlich"], 0, null, "Nach kurzem Selbstlaut: tz."),
+          mc("Was ist richtig?", ["Schwimbad","Schwimmbad"], 1, null, "schwimmen hat Doppel-m."),
+          mc("Was ist richtig?", ["Verkehr","Ferkehr"], 0, null, "Vorsilbe ver- mit V."),
+          mc("Was ist richtig?", ["forsichtig","vorsichtig"], 1, null, "Vorsilbe vor- mit V."),
+          mc("Was ist richtig?", ["Spaß","Schpaß"], 0),
+          mc("Was ist richtig?", ["Straße","Strase"], 0),
+          mc("Wie prüfst du, ob „Hund“ mit d oder t endet?", ["Verlängern: Hun-de","Raten","Laut sprechen"], 0),
+          mc("Wie prüfst du, ob es „Bäcker“ oder „Becker“ heißt?", ["Ableiten: kommt von backen","Würfeln","Kürzen"], 0),
+        ]},
+        { id:"d_bau", name:"Wörter bauen", icon:"🧱", bank:[
+          mc("Haus + Tür = ?", ["Haustür","Türhaus"], 0),
+          mc("Sonne + Blume = ?", ["Blumensonne","Sonnenblume"], 1),
+          mc("Fuß + Ball = ?", ["Fußball","Ballfuß"], 0),
+          mc("Wie heißt es richtig?", ["die Haustür","der Haustür","das Haustür"], 0, null, "Der Artikel richtet sich nach dem letzten Wort: die Tür."),
+          mc("Wie heißt es richtig?", ["die Fußball","der Fußball","das Fußball"], 1, null, "Der Artikel richtet sich nach dem letzten Wort: der Ball."),
+          mc("Wie heißt es richtig?", ["die Schulhaus","der Schulhaus","das Schulhaus"], 2, null, "Der Artikel richtet sich nach dem letzten Wort: das Haus."),
+          mc("Welches Wort ist zusammengesetzt?", ["Regenschirm","Regen","Schirm"], 0),
+          mc("Welches Wort ist zusammengesetzt?", ["Apfel","Apfelbaum","Baum"], 1),
+          mc("Aus welchen Wörtern besteht „Zahnbürste“?", ["Zahn + Bürste","Zahnbür + ste","Za + hnbürste"], 0),
+          mc("Welche Wortfamilie passt zu „fahren“?", ["Fahrrad, Fahrer, Abfahrt","Farbe, Farben, färben","Faden, fädeln, Fäden"], 0),
+          mc("Welche Wortfamilie passt zu „spielen“?", ["Spiegel, spiegeln","Spiel, Spieler, verspielt","Speise, speisen"], 1),
+          mc("Welche Vorsilbe passt: ___packen (etwas öffnen)?", ["aus","ver","be"], 0),
+          mc("Welche Nachsilbe macht aus „Freund“ ein Adjektiv?", ["-lich","-ung","-heit"], 0, null, "freundlich"),
+          mc("„Glück“ + welche Nachsilbe = ein Adjektiv?", ["-lich","-keit","-nis"], 0, null, "glücklich"),
+        ]},
+        { id:"d_satz", name:"Satzarten", icon:"❗", bank:[
+          mc("Was für ein Satz: „Räum bitte dein Zimmer auf!“", ["Aufforderungssatz","Fragesatz","Aussagesatz"], 0),
+          mc("Was für ein Satz: „Morgen fahren wir an den See.“", ["Aussagesatz","Fragesatz","Aufforderungssatz"], 0, "🏖️"),
+          mc("Was für ein Satz: „Kommst du morgen mit?“", ["Fragesatz","Aussagesatz","Ausrufesatz"], 0),
+          mc("Was für ein Satz: „Was für ein tolles Fest!“", ["Ausrufesatz","Fragesatz","Aussagesatz"], 0, "🎉"),
+          mc("Welches Zeichen fehlt: „Gib mir bitte das Salz__“", ["!","?",","], 0, "🧂"),
+          mc("Welches Zeichen fehlt: „Wann beginnt der Film__“", ["?",".","!"], 0, "🎬"),
+          mc("Welcher Satz ist ein Aufforderungssatz?", ["Schließ das Fenster!","Das Fenster ist zu.","Ist das Fenster zu?"], 0),
+          mc("Welcher Satz ist ein Aussagesatz?", ["Die Sonne scheint.","Scheint die Sonne?","Scheine, Sonne!"], 0, "☀️"),
+          mc("Mit welchem Wort kann ein Fragesatz beginnen?", ["Wieso","Deshalb","Danach"], 0),
+          mc("Am Satzanfang schreibt man …", ["immer groß","immer klein","mal so, mal so"], 0),
+          mc("Was für ein Satz: „Halt den Ball fest!“", ["Aufforderungssatz","Fragesatz","Aussagesatz"], 0, "⚽"),
+          mc("Wie wird aus „Du kommst mit.“ eine Frage?", ["Kommst du mit?","Du kommst mit!","Komm mit."], 0),
+        ]},
+        { id:"d_rede", name:"Wörtliche Rede", icon:"🗨️", bank:[
+          mc("Wie ist es richtig?", ["Mia sagt: „Ich komme mit.“","Mia sagt „Ich komme mit.“","Mia sagt: Ich komme mit."], 0, null, "Doppelpunkt und Anführungszeichen."),
+          mc("Wie ist es richtig?", ["„Ich habe Hunger“, sagt Tom.","„Ich habe Hunger“ sagt Tom.","Ich habe Hunger, sagt Tom."], 0, null, "Nach der Rede folgt ein Komma."),
+          mc("Was steht vor der wörtlichen Rede, wenn der Begleitsatz vorne steht?", ["ein Doppelpunkt","ein Komma","gar nichts"], 0),
+          mc("Wo stehen die Anführungszeichen am Anfang der Rede?", ["unten: „","oben: “","in der Mitte"], 0),
+          mc("Welcher Teil ist die wörtliche Rede: Papa ruft: „Das Essen ist fertig!“", ["„Das Essen ist fertig!“","Papa ruft","ruft:"], 0, "🍝"),
+          mc("Wie ist es richtig?", ["Lena fragt: „Kommst du mit?“","Lena fragt: „Kommst du mit“?","Lena fragt „Kommst du mit?“"], 0),
+          mc("Welcher Teil ist der Begleitsatz: „Ich bin müde“, flüstert Ben.", ["flüstert Ben","Ich bin müde","müde flüstert"], 0, "😴"),
+          mc("Wie ist es richtig?", ["Der Lehrer sagt: „Schlagt das Buch auf.“","Der Lehrer sagt: Schlagt das Buch auf.","Der Lehrer sagt, „Schlagt das Buch auf.“"], 0, "📖"),
+          mc("Welches Verb passt als Redebegleitung?", ["rufen","rennen","schwimmen"], 0),
+          mc("„Pass auf!“, ___ Mama. Welches Wort passt?", ["warnt","malt","isst"], 0),
+          mc("Wie ist es richtig?", ["„Wo ist mein Heft?“, fragt Ali.","„Wo ist mein Heft“?, fragt Ali.","Wo ist mein Heft?, fragt Ali."], 0),
+          mc("Woran erkennst du wörtliche Rede?", ["an den Anführungszeichen","an der Großschreibung","am Punkt am Ende"], 0),
+        ]},
+      ]},
+      { name:"Englisch", icon:"🇬🇧", topics:[
+        { id:"e_words", name:"English Words", icon:"🗣️", bank:[
+          mc("Was heißt das auf Englisch?", ["dog","cat","mouse","bird"], 0, "🐶"),
+          mc("Was heißt das auf Englisch?", ["dog","cat","fish","horse"], 1, "🐱"),
+          mc("Was heißt das auf Englisch?", ["bird","rabbit","fish","cow"], 2, "🐟"),
+          mc("Was heißt das auf Englisch?", ["horse","sheep","pig","duck"], 0, "🐴"),
+          mc("Was heißt das auf Englisch?", ["cow","pig","dog","cat"], 1, "🐷"),
+          mc("Was heißt das auf Englisch?", ["mouse","bird","bear","lion"], 1, "🐦"),
+          mc("Was heißt das auf Englisch?", ["apple","banana","cherry","orange"], 0, "🍎"),
+          mc("Was heißt das auf Englisch?", ["apple","banana","lemon","plum"], 1, "🍌"),
+          mc("Was heißt das auf Englisch?", ["bread","cake","cheese","milk"], 0, "🍞"),
+          mc("Was heißt das auf Englisch?", ["water","milk","juice","tea"], 1, "🥛"),
+          mc("Was heißt das auf Englisch?", ["ice cream","cake","cookie","sweet"], 0, "🍦"),
+          mc("Was heißt das auf Englisch?", ["egg","cheese","butter","ham"], 0, "🥚"),
+          mc("Was heißt das auf Englisch?", ["book","pen","bag","ruler"], 0, "📖"),
+          mc("Was heißt das auf Englisch?", ["pencil","book","rubber","glue"], 0, "✏️"),
+          mc("Was heißt das auf Englisch?", ["chair","table","bed","door"], 1, "🪑", "Achtung: chair = Stuhl, table = Tisch."),
+          mc("Was heißt das auf Englisch?", ["school","house","garden","shop"], 0, "🏫"),
+          mc("Was heißt das auf Englisch?", ["sun","moon","star","cloud"], 0, "☀️"),
+          mc("Was heißt das auf Englisch?", ["sun","moon","star","rain"], 1, "🌙"),
+          mc("Was heißt „Familie“ auf Englisch?", ["family","friends","parents","people"], 0, "👨‍👩‍👧‍👦"),
+          mc("Was heißt „Bruder“ auf Englisch?", ["sister","brother","father","uncle"], 1),
+          mc("Was heißt „Schwester“ auf Englisch?", ["sister","brother","mother","aunt"], 0),
+          mc("Was heißt „hand“ auf Deutsch?", ["Hand","Fuß","Kopf","Arm"], 0, "✋"),
+          mc("Was heißt „head“ auf Deutsch?", ["Herz","Kopf","Haar","Hals"], 1),
+          mc("Was heißt „foot“ auf Deutsch?", ["Finger","Bein","Fuß","Zeh"], 2, "🦶"),
+          mc("Was heißt das auf Englisch?", ["car","bus","bike","train"], 0, "🚗"),
+          mc("Was heißt das auf Englisch?", ["car","train","plane","ship"], 1, "🚂"),
+        ]},
+        { id:"e_col", name:"Colours & Numbers", icon:"🎨", bank:[
+          mc("Which colour is this?", ["red","blue","green","yellow"], 0, "🔴"),
+          mc("Which colour is this?", ["red","blue","green","yellow"], 1, "🔵"),
+          mc("Which colour is this?", ["red","blue","green","yellow"], 2, "🟢"),
+          mc("Which colour is this?", ["red","blue","green","yellow"], 3, "🟡"),
+          mc("Which colour is this?", ["orange","purple","pink","brown"], 0, "🟠"),
+          mc("Which colour is this?", ["orange","purple","pink","brown"], 1, "🟣"),
+          mc("Which colour is this?", ["black","white","brown","pink"], 2, "🟤"),
+          mc("Which colour is this?", ["black","white","grey","green"], 0, "⚫"),
+          mc("Was heißt „white“ auf Deutsch?", ["weiß","schwarz","grau","gelb"], 0, "⚪"),
+          mc("Was heißt „pink“ auf Deutsch?", ["lila","rosa","rot","braun"], 1, "💗"),
+          nm("„seven“ – welche Zahl ist das?", 7),
+          nm("„three“ – welche Zahl ist das?", 3),
+          nm("„ten“ – welche Zahl ist das?", 10),
+          nm("„twelve“ – welche Zahl ist das?", 12),
+          nm("„fifteen“ – welche Zahl ist das?", 15),
+          nm("„twenty“ – welche Zahl ist das?", 20),
+          nm("two + three = ? (als Zahl)", 5),
+          nm("four + four = ? (als Zahl)", 8),
+          mc("Wie heißt 6 auf Englisch?", ["six","sex","sixt","seks"], 0),
+          mc("Wie heißt 11 auf Englisch?", ["eleven","onety-one","ten-one","eleventy"], 0),
+        ]},
+        { id:"e_sent", name:"Little Sentences", icon:"💬", bank:[
+          mc("„Hello, how are you?“ – Was passt als Antwort?", ["I'm fine, thank you.","Good night.","I am eight apples."], 0),
+          mc("Was heißt „Ich heiße Tom“?", ["My name is Tom.","I name Tom.","Me is Tom."], 0),
+          mc("„What's your name?“ heißt auf Deutsch:", ["Wie heißt du?","Wie alt bist du?","Wo wohnst du?"], 0),
+          mc("„How old are you?“ heißt auf Deutsch:", ["Wie groß bist du?","Wie alt bist du?","Wie geht es dir?"], 1),
+          mc("Was sagst du am Morgen?", ["Good morning!","Good night!","Goodbye!"], 0, "🌅"),
+          mc("Was sagst du vor dem Schlafen?", ["Good morning!","Good night!","Hello!"], 1, "🌙"),
+          mc("Was heißt „Danke“ auf Englisch?", ["Thank you.","Please.","Sorry."], 0),
+          mc("Was heißt „Bitte“ (wenn du um etwas bittest)?", ["Please.","Thanks.","Yes."], 0),
+          mc("„I like pizza.“ heißt auf Deutsch:", ["Ich mag Pizza.","Ich esse Pizza.","Ich backe Pizza."], 0, "🍕"),
+          mc("Wie fragst du nach der Farbe?", ["What colour is it?","How much is it?","Where is it?"], 0),
+          mc("„Can I have an apple, please?“ – Worum bittest du?", ["Um einen Apfel","Um eine Banane","Um ein Buch"], 0, "🍎"),
+          mc("Was heißt „Montag“ auf Englisch?", ["Monday","Sunday","Friday"], 0),
+          mc("Was heißt „Sunday“ auf Deutsch?", ["Samstag","Sonntag","Sonnenschein"], 1),
+          mc("„Goodbye!“ sagst du, wenn du …", ["gehst","ankommst","isst"], 0, "👋"),
+        ]},
+        { id:"e_hear", name:"Listening", icon:"🎧", bank:[
+          hear("dog", "Tippe an, was du gehört hast:", ["Hund","Katze","Maus"], 0),
+          hear("elephant", "Tippe an, was du gehört hast:", ["Elefant","Ente","Esel"], 0),
+          hear("apple", "Tippe an, was du gehört hast:", ["Apfel","Banane","Birne"], 0),
+          hear("breakfast", "Tippe an, was du gehört hast:", ["Frühstück","Brot","Pause"], 0),
+          hear("yellow", "Welche Farbe hast du gehört?", ["gelb","blau","grün"], 0),
+          hear("purple", "Welche Farbe hast du gehört?", ["lila","rosa","rot"], 0),
+          hear("thirteen", "Welche Zahl hast du gehört?", ["13","30","3"], 0, "thirteen = 13, thirty = 30"),
+          hear("sixteen", "Welche Zahl hast du gehört?", ["16","60","6"], 0),
+          hear("Open your book, please.", "Was sollst du tun?", ["das Buch aufschlagen","die Tür schließen","aufstehen"], 0),
+          hear("Stand up, please.", "Was sollst du tun?", ["aufstehen","dich hinsetzen","leise sein"], 0),
+          hear("Sit down, please.", "Was sollst du tun?", ["dich hinsetzen","aufstehen","singen"], 0),
+          hear("My favourite colour is green.", "Welche Lieblingsfarbe wurde genannt?", ["grün","gelb","braun"], 0),
+          hear("I have got two brothers.", "Wovon ist die Rede?", ["von zwei Brüdern","von zwei Schwestern","von zwei Hunden"], 0),
+          hear("It's raining today.", "Wie ist das Wetter?", ["Es regnet.","Die Sonne scheint.","Es schneit."], 0),
+          hear("How old are you?", "Was wird gefragt?", ["das Alter","der Name","die Adresse"], 0),
+        ]},
+      ]},
+    ]
+  };
+
+  /*DATA-END*/
+
+  /* ---------- DOM & Zustand ---------- */
+  const $ = id => document.getElementById(id);
+  const PRAISE = ["Super!","Klasse!","Stark!","Genau!","Toll gemacht!","Weiter so!","Raketenstark!","Perfekt!"];
+  const ROUND_N = 10, MISSION_N = 12, ERR_NEED = 2, ERR_MAX = 40;
+
+  /* ---------- Speicher (bleibt auf dem Gerät erhalten) ---------- */
+  let memFallback = null;
+  function loadSave(){
+    let d = null;
+    try{ d = JSON.parse(localStorage.getItem(CONFIG.storageKey)); }catch(e){ d = memFallback; }
+    if(!d || typeof d !== "object") d = {};
+    return Object.assign({ stars:0, missions:0, lastMission:"", topics:{}, errbox:[] }, d);
+  }
+  function persist(){
+    try{ localStorage.setItem(CONFIG.storageKey, JSON.stringify(save)); }catch(e){ memFallback = save; }
+  }
+  let save = loadSave();
+  function topicStat(tid){
+    if(!save.topics[tid]) save.topics[tid] = { plays:0, best:0, correct:0, wrong:0, seen:[] };
+    if(!save.topics[tid].seen) save.topics[tid].seen = [];
+    return save.topics[tid];
+  }
+  function today(){
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+
+  const state = {
+    mode:"topic",           // "topic" | "mission" | "errors"
+    topicId:null,
+    queue:[], current:null, curOpts:null,
+    solved:0, total:ROUND_N,
+    firstTry:{}, attempted:{},
+    input:"", locked:false,
+    streak:0, bestStreak:0, correctCount:0,
+    sound:true, lastQ:""
+  };
+
+  /* ---------- Sternenhimmel ---------- */
+  (function sky(){
+    const sky = $("sky");
+    for(let i=0;i<60;i++){
+      const d = document.createElement("span");
+      d.className = "dot";
+      const s = 1 + Math.random()*2.4;
+      d.style.width = d.style.height = s+"px";
+      d.style.left = Math.random()*100+"%";
+      d.style.top = Math.random()*100+"%";
+      d.style.animationDelay = (Math.random()*3)+"s";
+      sky.appendChild(d);
+    }
+  })();
+
+  /* ---------- Töne ---------- */
+  let audioCtx = null;
+  function tone(freq, start, dur, type, vol){
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type || "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || .18, audioCtx.currentTime + start);
+    g.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + start + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(audioCtx.currentTime + start); o.stop(audioCtx.currentTime + start + dur + .05);
+  }
+  function play(kind){
+    if(!state.sound) return;
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === "suspended") audioCtx.resume();
+      if(kind==="ok"){ tone(660,0,.12); tone(880,.12,.18); }
+      else if(kind==="bad"){ tone(200,0,.25,"square",.1); }
+      else if(kind==="tap"){ tone(500,0,.05,"sine",.06); }
+      else if(kind==="win"){ [523,659,784,1047].forEach((f,i)=>tone(f,i*.15,.25)); }
+    }catch(e){ /* Ton ist optional */ }
+  }
+  /* Englische Sprachausgabe für Hör-Aufgaben */
+  const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
+  function speak(text){
+    try{
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "en-GB"; u.rate = .85;
+      speechSynthesis.speak(u);
+    }catch(e){ /* Sprachausgabe ist optional */ }
+  }
+
+  function show(name){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    $("screen-"+name).classList.add("active");
+  }
+
+  /* ---------- Themen-Zugriff ---------- */
+  function allTopics(){
+    const out = [];
+    CONFIG.subjects.forEach(s=>s.topics.forEach(t=>out.push(t)));
+    return out;
+  }
+  function topicById(tid){ return allTopics().find(t=>t.id===tid); }
+  function itemId(topic, item, bankIdx){
+    return bankIdx !== undefined ? topic.id+"#"+bankIdx : topic.id+"§"+item.q+(item.b||"");
+  }
+
+  /* ---------- Aufgaben beschaffen ---------- */
+  function genUnique(topic, avoid){
+    for(let tries=0; tries<40; tries++){
+      const it = GENERATORS[topic.gen]();
+      const id = itemId(topic, it);
+      if(!avoid.has(id) && it.q !== state.lastQ){ return Object.assign({ id, tid:topic.id }, it); }
+    }
+    const it = GENERATORS[topic.gen]();
+    return Object.assign({ id:itemId(topic,it), tid:topic.id }, it);
+  }
+  function bankItems(topic, n){
+    const st = topicStat(topic.id);
+    const idxAll = topic.bank.map((_,i)=>i);
+    let fresh = shuffle(idxAll.filter(i=>!st.seen.includes(i)));
+    const chosen = [];
+    while(chosen.length < n){
+      if(fresh.length === 0){ st.seen = chosen.slice(); fresh = shuffle(idxAll.filter(i=>!chosen.includes(i))); if(fresh.length===0) fresh = shuffle(idxAll); }
+      const i = fresh.pop();
+      chosen.push(i);
+      if(!st.seen.includes(i)) st.seen.push(i);
+    }
+    if(st.seen.length >= idxAll.length) st.seen = [];
+    return chosen.map(i=>Object.assign({ id:itemId(topic,null,i), tid:topic.id }, topic.bank[i]));
+  }
+  function topicItems(topic, n, avoid){
+    if(topic.gen){
+      const out = [];
+      const av = new Set(avoid || []);
+      for(let i=0;i<n;i++){ const it = genUnique(topic, av); av.add(it.id); out.push(it); }
+      return out;
+    }
+    return bankItems(topic, n);
+  }
+  function errItemsFor(tid, max){
+    const list = save.errbox.filter(e=>!tid || e.tid===tid).slice(0, max);
+    return list.map(e=>Object.assign({ id:e.id, tid:e.tid, fromErr:true }, e.it));
+  }
+
+  /* ---------- Runde bauen ---------- */
+  function buildQueue(){
+    let items = [];
+    if(state.mode === "topic"){
+      const topic = topicById(state.topicId);
+      const errs = errItemsFor(topic.id, 2);
+      items = errs.concat(topicItems(topic, ROUND_N - errs.length, errs.map(e=>e.id)));
+      state.total = ROUND_N;
+    }else if(state.mode === "mission"){
+      const errs = errItemsFor(null, 3);
+      const topics = shuffle(allTopics());
+      const per = [];
+      let ti = 0;
+      while(per.length + errs.length < MISSION_N){
+        const t = topics[ti % topics.length]; ti++;
+        per.push(topicItems(t, 1, [])[0]);
+      }
+      items = shuffle(errs.concat(per));
+      state.total = MISSION_N;
+    }else{ /* errors */
+      items = errItemsFor(null, ROUND_N);
+      state.total = items.length;
+    }
+    state.queue = shuffle(items);
+  }
+
+  /* ---------- Fehlerkiste ---------- */
+  function errAdd(item){
+    const found = save.errbox.find(e=>e.id===item.id);
+    if(found){ found.need = ERR_NEED; return; }
+    save.errbox.push({ id:item.id, tid:item.tid, need:ERR_NEED,
+      it:{ t:item.t, q:item.q, o:item.o, a:item.a, u:item.u, b:item.b, e:item.e, say:item.say } });
+    if(save.errbox.length > ERR_MAX) save.errbox.shift();
+  }
+  function errGood(item){
+    const i = save.errbox.findIndex(e=>e.id===item.id);
+    if(i >= 0){ save.errbox[i].need--; if(save.errbox[i].need <= 0) save.errbox.splice(i,1); }
+  }
+
+  /* ---------- Übersicht rendern ---------- */
+  function starsStr(n){
+    let s = "";
+    for(let i=1;i<=3;i++) s += '<span class="'+(i<=n?"":"off")+'">★</span>';
+    return s;
+  }
+  function renderHome(){
+    $("logo").innerHTML = CONFIG.logoHtml;
+    $("hs-stars").textContent = "⭐ " + save.stars + " Sterne";
+    $("hs-missions").textContent = "🏅 " + save.missions + " Missionen";
+    const done = save.lastMission === today();
+    $("card-mission").classList.toggle("done", done);
+    $("mission-sub").textContent = done ? "Heute geschafft – nochmal geht immer! ✅" : "Heute noch offen – bunte Mischung aus allen Fächern";
+    const en = save.errbox.length;
+    $("card-errbox").classList.toggle("disabled", en === 0);
+    $("errbox-sub").textContent = en === 0 ? "Keine offenen Aufgaben – super!" : en + (en===1?" Aufgabe wartet":" Aufgaben warten") + " auf dich";
+    const wrap = $("subjects");
+    wrap.innerHTML = "";
+    CONFIG.subjects.forEach(sub=>{
+      const sec = document.createElement("div");
+      sec.className = "subject";
+      const h = document.createElement("h2");
+      h.textContent = sub.icon + " " + sub.name;
+      sec.appendChild(h);
+      const grid = document.createElement("div");
+      grid.className = "topics";
+      sub.topics.forEach(t=>{
+        const st = topicStat(t.id);
+        const b = document.createElement("button");
+        b.className = "topic";
+        b.innerHTML = '<span class="t-icon">'+t.icon+'</span><span><span class="t-name">'+t.name+'</span><br><span class="t-stars">'+starsStr(st.best)+'</span></span>';
+        b.addEventListener("click", ()=>{ play("tap"); startRound("topic", t.id); });
+        grid.appendChild(b);
+      });
+      sec.appendChild(grid);
+      wrap.appendChild(sec);
+    });
+    persist();
+  }
+
+  /* ---------- Runde spielen ---------- */
+  function startRound(mode, topicId){
+    state.mode = mode; state.topicId = topicId || null;
+    state.solved = 0; state.firstTry = {}; state.attempted = {};
+    state.streak = 0; state.bestStreak = 0; state.correctCount = 0;
+    state.input = ""; state.locked = false; state.lastQ = "";
+    buildQueue();
+    if(state.queue.length === 0){ renderHome(); show("home"); return; }
+    $("track").classList.remove("launching");
+    setProgress(0);
+    updateHud();
+    show("play");
+    nextItem();
+  }
+  function setProgress(p){
+    const pct = Math.max(0, Math.min(1, p)) * 100;
+    $("track-fill").style.width = pct + "%";
+    $("rocket").style.left = pct + "%";
+  }
+  function updateHud(){
+    $("hud-stars").textContent = "⭐ " + save.stars;
+    $("hud-streak").textContent = state.streak >= 3 ? "🔥 " + state.streak : "";
+  }
+  function badgeText(item){
+    if(state.mode === "errors" || item.fromErr) return "🔁 Wiederholung";
+    if(state.mode === "mission"){ const t = topicById(item.tid); return "🛰️ " + (t ? t.name : "Mission"); }
+    const t = topicById(item.tid); return t ? t.icon + " " + t.name : "";
+  }
+
+  function nextItem(){
+    state.input = ""; state.locked = false;
+    if(state.solved >= state.total || state.queue.length === 0){ finishRound(); return; }
+    state.current = state.queue.shift();
+    state.lastQ = state.current.q;
+    renderItem();
+  }
+  function renderItem(){
+    const it = state.current;
+    $("t-badge").textContent = badgeText(it);
+    $("bigemo").hidden = !it.b;
+    $("bigemo").textContent = it.b || "";
+    $("question").textContent = it.q;
+    $("question").classList.toggle("long", it.q.length > 22);
+    if(it.say && canSpeak){
+      $("hearbtn").hidden = false;
+    }else{
+      $("hearbtn").hidden = true;
+      if(it.say){ /* Kein Ton möglich: aus der Hör- wird eine Leseaufgabe */
+        $("question").textContent = it.q + " Lies: “" + it.say + "”";
+        $("question").classList.add("long");
+      }
+    }
+    $("feedback").textContent = "\u00A0";
+    $("feedback").className = "feedback";
+    $("stage").classList.remove("good","bad");
+    if(it.t === "num"){
+      $("opts").hidden = true; $("pad").hidden = false; $("answer").hidden = false;
+      $("answer-num").innerHTML = "&nbsp;";
+      $("answer-unit").textContent = it.u || "";
+    }else{
+      $("pad").hidden = true; $("answer").hidden = true; $("opts").hidden = false;
+      const order = shuffle(it.o.map((_,i)=>i));
+      state.curOpts = order;
+      const long = it.o.some(o=>String(o).length > 14);
+      $("opts").className = "opts" + (long || it.o.length > 4 ? " single" : "");
+      $("opts").innerHTML = "";
+      order.forEach(oi=>{
+        const b = document.createElement("button");
+        b.className = "opt"; b.textContent = it.o[oi]; b.dataset.oi = oi;
+        b.addEventListener("click", ()=>answerMc(oi, b));
+        $("opts").appendChild(b);
+      });
+    }
+  }
+
+  /* ---------- Antworten ---------- */
+  function markResult(ok, correctText){
+    const it = state.current;
+    state.locked = true;
+    const first = !state.attempted[it.id];
+    state.attempted[it.id] = true;
+    if(ok){
+      state.correctCount++; state.streak++;
+      state.bestStreak = Math.max(state.bestStreak, state.streak);
+      save.stars++;
+      if(first) state.firstTry[it.id] = true;
+      errGood(it);
+      state.solved++;
+      setProgress(state.solved / state.total);
+      $("stage").classList.add("good");
+      const msg = PRAISE[rnd(PRAISE.length)];
+      $("feedback").textContent = state.streak >= 5 ? msg + " 🔥 " + state.streak + " in Folge!" : msg;
+      $("feedback").className = "feedback good";
+      play("ok"); confetti();
+      const st = topicStat(it.tid); st.correct++;
+      persist(); updateHud();
+      setTimeout(nextItem, 800);
+    }else{
+      state.streak = 0;
+      $("stage").classList.add("bad");
+      let fb = "Richtig ist: " + correctText;
+      if(it.e) fb += " – " + it.e;
+      $("feedback").textContent = fb;
+      $("feedback").className = "feedback bad";
+      play("bad");
+      errAdd(it);
+      const st = topicStat(it.tid); st.wrong++;
+      /* Aufgabe kommt in dieser Runde etwas später nochmal */
+      const again = Object.assign({}, it);
+      state.queue.splice(Math.min(2, state.queue.length), 0, again);
+      persist(); updateHud();
+      setTimeout(nextItem, 2300);
+    }
+  }
+  function answerMc(oi, btn){
+    if(state.locked) return;
+    const it = state.current;
+    const ok = oi === it.a;
+    document.querySelectorAll(".opt").forEach(b=>{
+      b.disabled = true;
+      if(+b.dataset.oi === it.a) b.classList.add("right");
+    });
+    if(!ok) btn.classList.add("wrongpick");
+    markResult(ok, it.o[it.a]);
+  }
+  function pressDigit(d){
+    if(state.locked || state.current.t !== "num" || state.input.length >= 4) return;
+    play("tap"); state.input += d;
+    $("answer-num").textContent = state.input;
+  }
+  function pressDel(){
+    if(state.locked || state.current.t !== "num") return;
+    play("tap"); state.input = state.input.slice(0,-1);
+    $("answer-num").innerHTML = state.input || "&nbsp;";
+  }
+  function pressGo(){
+    if(state.locked || state.current.t !== "num" || state.input === "") return;
+    const it = state.current;
+    markResult(parseInt(state.input,10) === it.a, it.a + (it.u ? " " + it.u : ""));
+  }
+  $("pad").addEventListener("click", e=>{
+    const b = e.target.closest("button");
+    if(!b) return;
+    if(b.dataset.d !== undefined) pressDigit(b.dataset.d);
+    else if(b.dataset.a === "del") pressDel();
+    else if(b.dataset.a === "go") pressGo();
+  });
+  document.addEventListener("keydown", e=>{
+    if(!$("screen-play").classList.contains("active")) return;
+    if(e.key >= "0" && e.key <= "9") pressDigit(e.key);
+    else if(e.key === "Backspace"){ e.preventDefault(); pressDel(); }
+    else if(e.key === "Enter"){ e.preventDefault(); pressGo(); }
+  });
+
+  /* ---------- Konfetti ---------- */
+  function confetti(){
+    const stage = $("stage");
+    const n = state.streak > 0 && state.streak % 5 === 0 ? 16 : 7;
+    for(let i=0;i<n;i++){
+      const s = document.createElement("span");
+      s.className = "spark";
+      s.textContent = ["⭐","✨","🌟"][rnd(3)];
+      s.style.setProperty("--dx", (Math.random()*260-130)+"px");
+      s.style.setProperty("--dy", (-40 - Math.random()*180)+"px");
+      s.style.setProperty("--rot", (Math.random()*240-120)+"deg");
+      stage.appendChild(s);
+      setTimeout(()=>s.remove(), 950);
+    }
+  }
+
+  /* ---------- Runde beenden ---------- */
+  function finishRound(){
+    $("track").classList.add("launching");
+    const firstTryCount = Object.keys(state.firstTry).length;
+    const quote = state.total > 0 ? firstTryCount / state.total : 1;
+    const starsWon = quote >= .9 ? 3 : quote >= .65 ? 2 : 1;
+    if(state.mode === "topic"){
+      const st = topicStat(state.topicId);
+      st.plays++; st.best = Math.max(st.best, starsWon);
+    }else if(state.mode === "mission"){
+      if(save.lastMission !== today()){ save.missions++; save.lastMission = today(); }
+    }
+    persist();
+    const title = starsWon === 3 ? "Rakete gestartet! 🚀" : starsWon === 2 ? "Stark geflogen!" : "Geschafft!";
+    const stats = "<b>" + firstTryCount + " von " + state.total + "</b> Aufgaben gleich beim ersten Versuch richtig<br>" +
+                  "Beste Serie: <b>" + state.bestStreak + "</b> 🔥 &nbsp;·&nbsp; Sterne gesamt: <b>" + save.stars + "</b> ⭐";
+    const spans = $("end-stars").querySelectorAll("span");
+    spans.forEach((s,i)=>s.classList.toggle("won", i < starsWon));
+    $("end-title").textContent = title;
+    $("end-stats").innerHTML = stats;
+    play("win");
+    setTimeout(()=>show("end"), 900);
+  }
+
+  /* ---------- Navigation ---------- */
+  $("card-mission").addEventListener("click", ()=>{ play("tap"); startRound("mission"); });
+  $("hearbtn").addEventListener("click", ()=>{ if(state.current && state.current.say) speak(state.current.say); });
+  $("card-errbox").addEventListener("click", ()=>{ play("tap"); startRound("errors"); });
+  $("btn-home").addEventListener("click", ()=>{ renderHome(); show("home"); });
+  $("btn-menu").addEventListener("click", ()=>{ renderHome(); show("home"); });
+  $("btn-again").addEventListener("click", ()=>startRound(state.mode, state.topicId));
+  $("btn-sound").addEventListener("click", ()=>{
+    state.sound = !state.sound;
+    $("btn-sound").textContent = state.sound ? "🔊" : "🔇";
+    play("tap");
+  });
+  $("btn-reset").addEventListener("click", ()=>{
+    if(confirm("Wirklich den ganzen Fortschritt löschen?")){
+      try{ localStorage.removeItem(CONFIG.storageKey); }catch(e){}
+      memFallback = null; save = loadSave(); renderHome();
+    }
+  });
+
+  renderHome();
+})();
+</script>
+</body>
+</html>
