@@ -467,9 +467,75 @@
         return hear("Today is "+d[0]+".", "Welcher Tag ist heute?", lOpts(d, L_DAYS), 0); }
       const c = pick(L_CLASS);
       return hear(c[0], "Was sollst du tun?", lOpts(c, L_CLASS), 0);
+    },
+    /* Klasse 3: Lernwörter – Übungen werden automatisch aus der Liste LERNWOERTER erzeugt */
+    lernwoerter(){
+      const L = (typeof LERNWOERTER !== "undefined") ? LERNWOERTER : [];
+      if(L.length < 3) return mc("Die Lernwörter-Liste ist noch leer.", ["OK","Alles klar"], 0);
+      if(rnd(4) < 3){
+        for(let t=0; t<25; t++){
+          const w = pick(L);
+          const falsch = verschreib(w);
+          if(falsch.length){
+            const opts = [w].concat(falsch.slice(0,2));
+            const kern = w.replace(/^(der|die|das|er|sie|es) /,"");
+            return Object.assign(mc("Welches Wort ist richtig geschrieben?", opts, 0), { say:kern, lng:"de-DE" });
+          }
+        }
+      }
+      /* ABC-Aufgabe aus den Lernwörtern */
+      const kerns = shuffle(L.map(x=>x.replace(/^(der|die|das|er|sie|es) /,""))).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);
+      const erster = kerns.slice().sort((a,b)=>a.localeCompare(b,"de"))[0];
+      return mc("Welches Lernwort kommt im ABC zuerst?", kerns, kerns.indexOf(erster), "🔤");
     }
   };
-    /* ---------- Ferien-Camp Klasse 3 (Bildungsplan BW: Stoff der 3. Klasse) ---------- */
+  /* Typische Falschschreibungen zu einem Wort bauen (für die Lernwörter-Übung) */
+  function verschreib(voll){
+    const teile = voll.split(" ");
+    const kern = teile.pop();
+    const prefix = teile.length ? teile.join(" ")+" " : "";
+    const regeln = [
+      k => k.replace(/([bdfglmnprst])\1/, "$1"),                    /* Doppelkonsonant weg */
+      k => k.replace(/ck/, "k"),
+      k => k.replace(/tz/, "z"),
+      k => k.replace(/([aouäöei])h(?=[lmnrt])/, "$1"),              /* Dehnungs-h weg */
+      k => k.replace(/([aeiouäöü])h(?=[aeiouäöü])/, "$1"),          /* h zwischen Vokalen weg */
+      k => k.replace(/ie/, "i"),
+      k => k.replace(/äu/, "eu"),
+      k => k.replace(/ä/, "e"),
+      k => k.replace(/ei/, "ai"),
+      k => k.replace(/^v/, "f"),
+      k => k.replace(/^V/, "F"),
+      k => k.replace(/ig$/, "ich"),
+      k => k.replace(/b(?=[st])/, "p"),
+      k => k.replace(/([aeiouäöü])d(?=[aeiouäöü])/, "$1t"),
+      k => k.replace(/([lnr])d/, "$1t"),
+      k => k.replace(/d$/, "t"),
+      k => k.replace(/([aeiouäöü])([bdfglmnrt])(?=[aeiouäöü])/, "$1$2$2"),  /* falsche Verdopplung */
+      k => k.replace(/([aeiouäöü]n?)k/, "$1ck"),                    /* falsches ck */
+      k => k.replace(/([aeiou])\1/, "$1")                           /* Doppelvokal weg */
+    ];
+    const out = [];
+    regeln.forEach(r=>{
+      const f = r(kern);
+      if(f !== kern && f.length > 1 && out.indexOf(prefix+f) < 0) out.push(prefix+f);
+    });
+    return shuffle(out);
+  }
+    /* ============================================================
+     LERNWÖRTER KLASSE 3 – HIER PFLEGEN!
+     Einfach Wörter ergänzen, ändern oder löschen (bei Nomen mit
+     Artikel). Alle Übungen entstehen automatisch aus dieser Liste.
+     ============================================================ */
+  const LERNWOERTER = [
+    "der Nachmittag","holen","laufen","er läuft","das Fahrrad","die Kleidung",
+    "fahren","er fährt","die Heizung","trocken","öffnen","stehen","trinken",
+    "treffen","er trifft","vielleicht","die Nuss","schwierig","schnell",
+    "das Glück","mutig","jedoch","bilden","das Obst","schmutzig","der Preis",
+    "vorsichtig","der Zoo"
+  ];
+
+  /* ---------- Ferien-Camp Klasse 3 (Bildungsplan BW: Stoff der 3. Klasse) ---------- */
   const CONFIG = {
     storageKey: "raketen_ferien_k3",
     logoHtml: '🚀 Ferien<span class="x">-</span>Camp · Klasse 3',
@@ -499,6 +565,7 @@
         ]},
       ]},
       { name:"Deutsch", icon:"📚", topics:[
+        { id:"d_lern", name:"Lernwörter", icon:"🔡", gen:"lernwoerter" },
         { id:"d_wort", name:"Wortarten & Artikel", icon:"🧩", bank:[
           mc("Was für ein Wort ist „Freundschaft“?", ["Nomen","Verb","Adjektiv"], 0),
           mc("Was für ein Wort ist „flüstern“?", ["Nomen","Verb","Adjektiv"], 1),
@@ -752,11 +819,11 @@
   }
   /* Englische Sprachausgabe für Hör-Aufgaben */
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
-  function speak(text){
+  function speak(text, lang){
     try{
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-GB"; u.rate = .85;
+      u.lang = lang || "en-GB"; u.rate = .85;
       speechSynthesis.speak(u);
     }catch(e){ /* Sprachausgabe ist optional */ }
   }
@@ -846,7 +913,7 @@
     const found = save.errbox.find(e=>e.id===item.id);
     if(found){ found.need = ERR_NEED; return; }
     save.errbox.push({ id:item.id, tid:item.tid, need:ERR_NEED,
-      it:{ t:item.t, q:item.q, o:item.o, a:item.a, u:item.u, b:item.b, e:item.e, say:item.say } });
+      it:{ t:item.t, q:item.q, o:item.o, a:item.a, u:item.u, b:item.b, e:item.e, say:item.say, lng:item.lng } });
     if(save.errbox.length > ERR_MAX) save.errbox.shift();
   }
   function errGood(item){
@@ -941,7 +1008,8 @@
       $("hearbtn").hidden = false;
     }else{
       $("hearbtn").hidden = true;
-      if(it.say){ /* Kein Ton möglich: aus der Hör- wird eine Leseaufgabe */
+      if(it.say && !(it.o||[]).some(o=>String(o).indexOf(it.say) >= 0)){
+        /* Kein Ton möglich: aus der Hör- wird eine Leseaufgabe */
         $("question").textContent = it.q + " Lies: “" + it.say + "”";
         $("question").classList.add("long");
       }
@@ -1090,7 +1158,7 @@
 
   /* ---------- Navigation ---------- */
   $("card-mission").addEventListener("click", ()=>{ play("tap"); startRound("mission"); });
-  $("hearbtn").addEventListener("click", ()=>{ if(state.current && state.current.say) speak(state.current.say); });
+  $("hearbtn").addEventListener("click", ()=>{ if(state.current && state.current.say) speak(state.current.say, state.current.lng); });
   $("card-errbox").addEventListener("click", ()=>{ play("tap"); startRound("errors"); });
   $("btn-home").addEventListener("click", ()=>{ renderHome(); show("home"); });
   $("btn-menu").addEventListener("click", ()=>{ renderHome(); show("home"); });
